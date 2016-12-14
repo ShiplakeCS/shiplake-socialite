@@ -255,6 +255,7 @@ def listenForTweets():
         listenForTweets()
 
 lc = LightsController()
-uploadIPtoDropbox()
-lc.on(20)
+#uploadIPtoDropbox()
+lc.flashAllSequence(20)
+
 #listenForTweets()
