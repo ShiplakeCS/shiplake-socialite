@@ -7,15 +7,14 @@ from datetime import datetime
 from time import sleep
 from netifaces import interfaces, ifaddresses, AF_INET
 import RPi.GPIO as GPIO
+from flask import Flask
 
+webapp = Flask(__name__)
 
 auth = OAuthHandler(CONSUMER_KEY, CONSUMER_SECRET)
 auth.set_access_token(ACCESS_TOKEN, ACCESS_TOKEN_SECRET)
 TRIGGER_MESSAGE = open('trigger','r').readline().rstrip("\n")
 print("Using", TRIGGER_MESSAGE, "as trigger message")
-
-
-
 
 class LightsController:
     STAR_LIGHTS = 18
@@ -83,6 +82,12 @@ class LightsController:
         print("**Status light off**")
 
         # GPIO.output(self.STATUS_LIGHT, False)
+
+    def perm_on(self):
+        self.lightsBusy = True
+        self.treeOn()
+        self.ballsOn()
+        self.starOn()
 
     def on(self, duration):
 
@@ -201,6 +206,7 @@ class LightsController:
             self.ballsOff()
             self.starOn()
             sleep(flashTime)
+            self.off()
 
         # print (datetime.datetime.now())
         self.lightsBusy = False
@@ -257,6 +263,31 @@ def listenForTweets():
         lc.on(10)
         listenForTweets()
 
+# API routes
+
+@webapp.route('/on/')
+def web_on():
+    global lc
+    lc.perm_on()
+
+@webapp.route('/off/')
+def web_off():
+    global lc
+    lc.off()
+
+@webapp.route('/flash/')
+def web_flash():
+    global lc
+    lc.flashAllTogether(20)
+
+@webapp.route('/chase/')
+def web_chase():
+    global lc
+    lc.flashAllSequence(20)
+
 
 uploadIPtoDropbox()
 listenForTweets()
+
+if __name__ == '__main__':
+    webapp.run(host="0.0.0.0", port=5000)
