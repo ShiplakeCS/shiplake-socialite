@@ -8,6 +8,7 @@ from time import sleep
 from netifaces import interfaces, ifaddresses, AF_INET
 import RPi.GPIO as GPIO
 from flask import Flask
+import threading
 
 webapp = Flask(__name__)
 
@@ -15,6 +16,13 @@ auth = OAuthHandler(CONSUMER_KEY, CONSUMER_SECRET)
 auth.set_access_token(ACCESS_TOKEN, ACCESS_TOKEN_SECRET)
 TRIGGER_MESSAGE = open('trigger','r').readline().rstrip("\n")
 print("Using", TRIGGER_MESSAGE, "as trigger message")
+
+class myThread (threading.Thread):
+    def __init__(self):
+        threading.Thread.__init__(self)
+    def run(self):
+        uploadIPtoDropbox()
+        listenForTweets()
 
 class LightsController:
     STAR_LIGHTS = 18
@@ -286,8 +294,8 @@ def web_chase():
     lc.flashAllSequence(20)
 
 
-uploadIPtoDropbox()
-listenForTweets()
+listenThread = myThread()
+listenThread.start()
 
 if __name__ == '__main__':
     webapp.run(host="0.0.0.0", port=5000)
