@@ -36,6 +36,7 @@ class LightsController:
         GPIO.setup(self.BALL_LIGHTS, GPIO.OUT)
         # GPIO.setup(self.STATUS_LIGHT, GPIO.OUT)
         print("Initialised GPIO pins")
+        self.flashAllTogether(5)
         self.off()
 
     def off(self):
@@ -211,6 +212,7 @@ class listener(StreamListener):
     def on_data(self, data):
         d = json.loads(data)
         print("trigger message found in tweet: %s" % d['text'])
+        lc.flashAllSequence(20)
         return True
 
     def on_error(self, status):
@@ -237,10 +239,11 @@ def uploadIPtoDropbox():
 
     except:
         print("Dropbox connection error. Attempting again in 10 seconds.")
-        sleep(10)
+        lc.on(10)
         uploadIPtoDropbox()
 
-
+# Set up global lights controller object
+lc = LightsController()
 
 
 def listenForTweets():
@@ -251,11 +254,9 @@ def listenForTweets():
 
     except:
         print("Twitter connection error. Trying again in 10 seconds.")
-        sleep(10)
+        lc.on(10)
         listenForTweets()
 
-lc = LightsController()
-#uploadIPtoDropbox()
-lc.flashAllSequence(20)
 
-#listenForTweets()
+uploadIPtoDropbox()
+listenForTweets()
