@@ -1,0 +1,64 @@
+from keys import CONSUMER_KEY, CONSUMER_SECRET, ACCESS_TOKEN, ACCESS_TOKEN_SECRET, DROPBOX_ACCESS_TOKEN
+from tweepy import Stream, OAuthHandler
+from tweepy.streaming import StreamListener
+import json
+import dropbox
+from datetime import datetime
+from time import sleep
+from netifaces import interfaces, ifaddresses, AF_INET
+
+auth = OAuthHandler(CONSUMER_KEY, CONSUMER_SECRET)
+auth.set_access_token(ACCESS_TOKEN, ACCESS_TOKEN_SECRET)
+TRIGGER_MESSAGE = open('trigger','r').readline().rstrip("\n")
+
+print("Using", TRIGGER_MESSAGE, "as trigger message")
+
+
+def uploadIPtoDropbox():
+
+    # Establish dropbox connection - useful for uploading IP address to DB
+
+    try:
+        dbx = dropbox.Dropbox(DROPBOX_ACCESS_TOKEN)
+        ip_message = "Socialite Christmas Jumper\n\n"
+
+        # from http://stackoverflow.com/questions/166506/finding-local-ip-addresses-using-pythons-stdlib
+        for ifaceName in interfaces():
+            addresses = [i['addr'] for i in ifaddresses(ifaceName).setdefault(AF_INET, [{'addr':'No IP addr'}] )]
+            ip_message = ip_message +  '%s: %s\n' % (ifaceName, ', '.join(addresses))
+
+        ip_message = ip_message + "Updated: {1}".format("xx.xx.xx.xx", datetime.now())
+        dbx.files_upload(ip_message.encode('utf-8'), '/jumper_ip.txt', mode=dropbox.files.WriteMode('overwrite'))
+        print("IP address uploaded to Dropbox")
+
+    except:
+        print("Dropbox connection error. Attempting again in 10 seconds.")
+        sleep(10)
+        uploadIPtoDropbox()
+
+
+# Set up Twitter listener
+class listener(StreamListener):
+
+    def on_data(self, data):
+        d = json.loads(data)
+        print("trigger message found in tweet: %s" % d['text'])
+        return True
+
+    def on_error(self, status):
+        print (status)
+        return False
+
+def listenForTweets():
+    try:
+        twitterStream = Stream(auth, listener())
+        twitterStream.filter(track=[TRIGGER_MESSAGE])
+        print("Twitter stream listener started.")
+
+    except:
+        print("Twitter connection error. Trying again in 10 seconds.")
+        sleep(10)
+        listenForTweets()
+
+uploadIPtoDropbox()
+#listenForTweets()
