@@ -7,7 +7,7 @@ from datetime import datetime
 from time import sleep
 from netifaces import interfaces, ifaddresses, AF_INET
 import RPi.GPIO as GPIO
-from flask import Flask
+from flask import Flask, render_template
 import threading
 
 webapp = Flask(__name__)
@@ -272,27 +272,33 @@ def listenForTweets():
         listenForTweets()
 
 # API routes
+@webapp.route('/')
+def index():
+    return render_template('index.html')
 
 @webapp.route('/on/')
 def web_on():
     global lc
     lc.perm_on()
+    return render_template('index.html')
 
 @webapp.route('/off/')
 def web_off():
     global lc
     lc.off()
+    return render_template('index.html')
 
 @webapp.route('/flash/')
 def web_flash():
     global lc
     lc.flashAllTogether(20)
+    return render_template('index.html')
 
 @webapp.route('/chase/')
 def web_chase():
     global lc
     lc.flashAllSequence(20)
-
+    return render_template('index.html')
 
 listenThread = myThread()
 listenThread.start()
