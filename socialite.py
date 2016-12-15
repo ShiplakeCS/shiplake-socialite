@@ -280,28 +280,29 @@ def index():
 def web_on():
     global lc
     lc.perm_on()
-    return render_template('index.html')
+    return render_template('index.html', message="Message received! You made my lights shine!")
 
 @webapp.route('/off/')
 def web_off():
     global lc
     lc.off()
-    return render_template('index.html')
+    return render_template('index.html', message="Message received! Had enough of my lights, I see...")
 
 @webapp.route('/flash/')
 def web_flash():
     global lc
     lc.flashAllTogether(20)
-    return render_template('index.html')
+    return render_template('index.html', message="Message received! Flashing has commenced.")
 
 @webapp.route('/chase/')
 def web_chase():
     global lc
     lc.flashAllSequence(20)
-    return render_template('index.html')
+    return render_template('index.html', message="Message received! You're into the fancy stuff I see.")
 
-listenThread = myThread()
-listenThread.start()
+# Disabled due to SSL certificate error in school
+#listenThread = myThread()
+#listenThread.start()
 
 if __name__ == '__main__':
     webapp.run(host="0.0.0.0", port=5000)

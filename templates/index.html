@@ -3,8 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <title>Mr. Dimmick's Social Jumper!</title>
+    <link rel="stylesheet" href="/style/style.css">
 </head>
 <body>
+
+    {% if message %}
+    <div clas="stausMessage">
+        <h2>Thanks!</h2>
+        <p>{{message}}</p>
+    </div>
+    {% endif %}
     <h1>Welcome to my jumper's control page!</h1>
     <p>Pick an option:</p>
     <ul>
